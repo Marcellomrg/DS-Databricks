@@ -34,7 +34,7 @@ def table_existe(catalog,database,table):
 
 catalog = "feature_store"
 database = "upsell"
-table = "fs_transacoes"
+table = "fs_pontos"
 tableName = f"{catalog}.{database}.{table}"
 
 query = import_query(f"{table}.sql")
