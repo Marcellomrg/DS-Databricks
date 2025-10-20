@@ -3,6 +3,10 @@
 
 # COMMAND ----------
 
+# MAGIC %pip install feature_engine 
+
+# COMMAND ----------
+
 dbutils.library.restartPython()
 
 # COMMAND ----------
@@ -36,9 +40,23 @@ df_train_pandas.head()
 
 # COMMAND ----------
 
+# Como essas Algumas variaveis estao no formato de object mas sao numericas,vou fazer a conversao para float
+
+#'nrTransacaoDiaD7',
+#'nrTransacaoDiaD28',
+#'nrTransacaoDiaD56',
+#'nrTransacaoDiaVida'
+
+df_train_pandas_cat = df_train_pandas.columns[df_train_pandas.dtypes == 'object'][2:].to_list()
+
+df_train_pandas[df_train_pandas_cat] = df_train_pandas[df_train_pandas_cat].astype(float)
+df_train_pandas.head()
+
+# COMMAND ----------
+
 # DBTITLE 1,SAMPLE
 from sklearn import model_selection
-
+from feature_engine import imputation
 import numpy as np
 import pandas as pd
 pd.set_option('display.max_rows', 500)
@@ -67,7 +85,8 @@ x_train.head()
 # Explorar os dados
 
 # Explorando features do tipo object
-cat_features = x_train.columns[x_train.dtypes == 'objetc']
+cat_features = x_train.columns[x_train.dtypes == 'object'].to_list()
+cat_features
 
 
 # COMMAND ----------
@@ -110,7 +129,7 @@ df_describe[target] = y_train.copy()
 
 describe = df_describe.groupby(target)[features].mean().T
 
-describe[0] = describe[0].replace(0,np.nan)
+#describe[0] = describe[0].replace(0,np.nan)
 
 describe["ratio"] = describe[1] / describe[0]
 
@@ -120,4 +139,54 @@ describe
 # COMMAND ----------
 
 # DBTITLE 1,MODIFY
+# Modificando meus dados 
+
+# Fazendo o input de zero nas features onde contem dados nulos
+
+features_input_zeros = [
+
+'nrqtdepontosnegativosvida',                
+'nrqtdepontospositivosd7',                 
+'nrqtdepontosnegativosd7' ,    
+'nrqtdepontosnegativosd28' ,    
+'nrqtdepontosnegativosd56' ,    
+'nrPctTransacoesChurn_5pp' ,    
+'nrPctTransacoesChurn_10pp' ,    
+'nrPctTransacoesChurn_2pp' ,    
+'nrPctTransacoesAirflowLover' ,    
+'nrPctTransacoesDailyLoot'  ,    
+'nrPctTransacoesListaPresenca' ,    
+'nrPctTransacoesPresencaStreak' ,    
+'nrPctTransacoesRLover',    
+'nrPctTransacoesResgatarPonei',    
+'nrPctTransacoesTrocaPontosStreamElements',    
+'nrPctTransacoesitemVenda',    
+'nrTransacaoDiaD7',    
+'nrqtdeTransacaoManha',    
+'nrqtdeTransacaoTarde',    
+'nrqtdeTransacaoNoite',    
+'nrqntpontosminuto',    
+'nrqnttransacaominuto',
+'nrqntmenssagensminuto'
+
+]
+
+input_zeros = imputation.ArbitraryNumberImputer(variables=features_input_zeros
+                                  ,arbitrary_number=0)
+
+input_zeros.fit(x_train,y_train)
+
+x_train_transform = input_zeros.transform(x_train)
+
+x_test_transform = input_zeros.transform(x_test)
+
+
+# COMMAND ----------
+
+# DBTITLE 1,MODIFY
+x_train_transform.isna().sum()
+
+# COMMAND ----------
+
+# DBTITLE 1,MODEL
 
