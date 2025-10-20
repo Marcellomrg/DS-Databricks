@@ -75,9 +75,6 @@ X_train, X_test, y_train, y_test = model_selection.train_test_split(X,y,test_siz
 
 X_train.head()
 
-x_train, x_test, y_train, y_test = model_selection.train_test_split(X,y,test_size=0.3,random_state=42)
-
-x_train.head()
 
 # COMMAND ----------
 
@@ -85,7 +82,7 @@ x_train.head()
 # Explorar os dados
 
 # Explorando features do tipo object
-cat_features = x_train.columns[x_train.dtypes == 'object'].to_list()
+cat_features = X_train.columns[x_train.dtypes == 'object'].to_list()
 cat_features
 
 
@@ -93,7 +90,7 @@ cat_features
 
 # DBTITLE 1,EXPLORE
 # Explorando dados nulos
-x_train.isna().sum()
+X_train.isna().sum()
 
 #nrqtdepontosnegativosvida                  --->      1329
 #nrqtdepontospositivosd7                    --->       777
@@ -124,7 +121,7 @@ x_train.isna().sum()
 # DBTITLE 1,EXPLORE
 
 # Fazendo uma analise Descritiva de cada feature em Relacao a minha variavel target
-df_describe = x_train.copy()
+df_describe = X_train.copy()
 df_describe[target] = y_train.copy()
 
 describe = df_describe.groupby(target)[features].mean().T
@@ -174,19 +171,31 @@ features_input_zeros = [
 input_zeros = imputation.ArbitraryNumberImputer(variables=features_input_zeros
                                   ,arbitrary_number=0)
 
-input_zeros.fit(x_train,y_train)
 
-x_train_transform = input_zeros.transform(x_train)
-
-x_test_transform = input_zeros.transform(x_test)
 
 
 # COMMAND ----------
 
 # DBTITLE 1,MODIFY
-x_train_transform.isna().sum()
+X_train_transform.isna().sum()
 
 # COMMAND ----------
 
 # DBTITLE 1,MODEL
+from sklearn import ensemble
+from sklearn import pipeline
+from sklearn import metrics
+
+
+model = ensemble.RandomForestClassifier(n_estimators=500,min_samples_leaf=50,random_state=42,n_jobs=-1)
+
+model_pipeline = pipeline.Pipeline(steps=[('input_zeros',input_zeros),
+                                          ('model',model)])
+
+
+model_pipeline.fit(X_train,y_train)
+
+# COMMAND ----------
+
+# DBTITLE 1,ASSESS
 
