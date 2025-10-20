@@ -33,3 +33,21 @@ df_train = training_set.load_df()
 
 df_train_pandas  = df_train.toPandas()
 df_train_pandas.head()
+
+# COMMAND ----------
+
+# DBTITLE 1,SAMPLE
+from sklearn import model_selection
+
+# Sepando minha base entre treino e teste
+
+features = df_train_pandas.columns.tolist()[2:-1]
+
+target = 'flChurn'
+
+X = df_train_pandas[features]
+y = df_train_pandas[target]
+
+X_train, X_test, y_train, y_test = model_selection.train_test_split(X,y,test_size=0.3,random_state=42)
+
+X_train.head()
