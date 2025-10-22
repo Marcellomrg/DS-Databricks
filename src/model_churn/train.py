@@ -82,7 +82,7 @@ X_train.head()
 # Explorar os dados
 
 # Explorando features do tipo object
-cat_features = X_train.columns[x_train.dtypes == 'object'].to_list()
+cat_features = X_train.columns[X_train.dtypes == 'object'].to_list()
 cat_features
 
 
@@ -126,7 +126,7 @@ df_describe[target] = y_train.copy()
 
 describe = df_describe.groupby(target)[features].mean().T
 
-#describe[0] = describe[0].replace(0,np.nan)
+describe[0] = describe[0].replace(0,np.nan)
 
 describe["ratio"] = describe[1] / describe[0]
 
@@ -176,11 +176,6 @@ input_zeros = imputation.ArbitraryNumberImputer(variables=features_input_zeros
 
 # COMMAND ----------
 
-# DBTITLE 1,MODIFY
-X_train_transform.isna().sum()
-
-# COMMAND ----------
-
 # DBTITLE 1,MODEL
 from sklearn import ensemble
 from sklearn import pipeline
@@ -198,4 +193,23 @@ model_pipeline.fit(X_train,y_train)
 # COMMAND ----------
 
 # DBTITLE 1,ASSESS
+# CALCULANDO MEUS PREDICTS
+predict_train = model_pipeline.predict(X_train)
 
+predict_test = model_pipeline.predict(X_test)
+
+pridict_proba_train = model_pipeline.predict_proba(X_train)[:,1]
+
+pridict_proba_test = model_pipeline.predict_proba(X_test)[:,1]
+
+# COMMAND ----------
+
+# DBTITLE 1,ASSESS
+acc_train = metrics.accuracy_score(y_train,predict_train)
+acc_test = metrics.accuracy_score(y_test,predict_test)
+print('Acuracia Treino: ',acc_train)
+print('Acuracia Teste: ',acc_test)
+auc_train = metrics.roc_auc_score(y_train,pridict_proba_train)
+auc_test = metrics.roc_auc_score(y_test,pridict_proba_test)
+print('AUC Treino: ',auc_train)
+print('AUC Teste: ',auc_test)
