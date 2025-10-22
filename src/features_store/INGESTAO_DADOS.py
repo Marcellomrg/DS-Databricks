@@ -39,12 +39,7 @@ tableName = f"{catalog}.{database}.{table}"
 
 query = import_query(f"{table}.sql")
 
-dates = ["2024-02-01"
-         ,"2024-03-01"
-         ,"2024-04-01"
-         ,"2024-05-01"
-         ,"2024-06-01"
-         ,"2024-07-01"]
+dates = ["2024-08-01","2024-08-05"]
 
 
 if not table_existe(catalog, database, table):

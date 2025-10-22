@@ -3,6 +3,10 @@
 
 # COMMAND ----------
 
+# MAGIC %pip install tqdm
+
+# COMMAND ----------
+
 # MAGIC %pip install feature_engine 
 
 # COMMAND ----------
@@ -180,36 +184,46 @@ input_zeros = imputation.ArbitraryNumberImputer(variables=features_input_zeros
 from sklearn import ensemble
 from sklearn import pipeline
 from sklearn import metrics
+from tqdm import tqdm
+import mlflow
 
 
-model = ensemble.RandomForestClassifier(n_estimators=500,min_samples_leaf=50,random_state=42,n_jobs=-1)
+mlflow.set_experiment(experiment_id=1014072875431853)
+
+model = ensemble.RandomForestClassifier(n_estimators=500,min_samples_leaf=100,random_state=42,n_jobs=-1)
 
 model_pipeline = pipeline.Pipeline(steps=[('input_zeros',input_zeros),
                                           ('model',model)])
 
 
-model_pipeline.fit(X_train,y_train)
-
 # COMMAND ----------
 
 # DBTITLE 1,ASSESS
-# CALCULANDO MEUS PREDICTS
-predict_train = model_pipeline.predict(X_train)
 
-predict_test = model_pipeline.predict(X_test)
+with tqdm(mlflow.start_run()) :
 
-pridict_proba_train = model_pipeline.predict_proba(X_train)[:,1]
+    mlflow.sklearn.autolog()
 
-pridict_proba_test = model_pipeline.predict_proba(X_test)[:,1]
+    model_pipeline.fit(X_train,y_train)
 
-# COMMAND ----------
+    # CALCULANDO MEUS PREDICTS
+    predict_train = model_pipeline.predict(X_train)
 
-# DBTITLE 1,ASSESS
-acc_train = metrics.accuracy_score(y_train,predict_train)
-acc_test = metrics.accuracy_score(y_test,predict_test)
-print('Acuracia Treino: ',acc_train)
-print('Acuracia Teste: ',acc_test)
-auc_train = metrics.roc_auc_score(y_train,pridict_proba_train)
-auc_test = metrics.roc_auc_score(y_test,pridict_proba_test)
-print('AUC Treino: ',auc_train)
-print('AUC Teste: ',auc_test)
+    predict_test = model_pipeline.predict(X_test)
+
+    pridict_proba_train = model_pipeline.predict_proba(X_train)[:,1]
+
+    pridict_proba_test = model_pipeline.predict_proba(X_test)[:,1]
+
+    acc_train = metrics.accuracy_score(y_train,predict_train)
+    acc_test = metrics.accuracy_score(y_test,predict_test)
+  
+    auc_train = metrics.roc_auc_score(y_train,pridict_proba_train)
+    auc_test = metrics.roc_auc_score(y_test,pridict_proba_test)
+
+    mlflow.log_metrics({
+        'acc_train':acc_train,
+        'acc_test':acc_test,
+        'auc_train':auc_train,
+        'auc_test':auc_test})
+    
