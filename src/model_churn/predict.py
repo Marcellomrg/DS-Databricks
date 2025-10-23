@@ -13,7 +13,7 @@ dbutils.library.restartPython()
 
 import mlflow
 mlflow.set_registry_uri("databricks-uc")
-model_uri = "models:/feature_store.upsell.model_churn/1"
+model_uri = "models:/feature_store.upsell.model_churn/2"
 model = mlflow.sklearn.load_model(model_uri)
 
 # COMMAND ----------

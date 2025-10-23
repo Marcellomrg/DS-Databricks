@@ -16,6 +16,17 @@ dbutils.library.restartPython()
 # COMMAND ----------
 
 from databricks.feature_engineering import FeatureEngineeringClient,FeatureLookup
+from sklearn import model_selection
+from feature_engine import imputation
+import numpy as np
+import pandas as pd
+pd.set_option('display.max_rows', 500)
+from sklearn import ensemble
+from sklearn import pipeline
+from sklearn import metrics
+from tqdm import tqdm
+import mlflow
+mlflow.set_experiment(experiment_id=1014072875431853)
 
 def import_query(path):
     with open(path) as open_file:
@@ -59,11 +70,6 @@ df_train_pandas.head()
 # COMMAND ----------
 
 # DBTITLE 1,SAMPLE
-from sklearn import model_selection
-from feature_engine import imputation
-import numpy as np
-import pandas as pd
-pd.set_option('display.max_rows', 500)
 
 # Sepando minha base entre treino e teste
 
@@ -181,19 +187,22 @@ input_zeros = imputation.ArbitraryNumberImputer(variables=features_input_zeros
 # COMMAND ----------
 
 # DBTITLE 1,MODEL
-from sklearn import ensemble
-from sklearn import pipeline
-from sklearn import metrics
-from tqdm import tqdm
-import mlflow
-
-
-mlflow.set_experiment(experiment_id=1014072875431853)
-
+# FAZENDO A MODELAGEM DO MEU MODELO 
 model = ensemble.RandomForestClassifier(n_estimators=500,min_samples_leaf=100,random_state=42,n_jobs=-1)
 
+params = {"min_samples_leaf": [50,100,200,300,500],
+          "n_estimators": [100,200,300,400,500],
+          }
+
+grid = model_selection.GridSearchCV(param_grid=params
+                                    ,cv=3
+                                    ,verbose=4
+                                    ,estimator=model
+                                    ,n_jobs=1
+                                    ,scoring='roc_auc')
+
 model_pipeline = pipeline.Pipeline(steps=[('input_zeros',input_zeros),
-                                          ('model',model)])
+                                          ('grid',grid)])
 
 
 # COMMAND ----------
