@@ -1,2 +1,2 @@
-# DS-Databricks
-Objetivo é criar um modelo que posso prever o churn usando o DataBricks
+# Projeto DataScience Completo no DataBricks
+Objetivo é criar um modelo que possa prever o churn do meu cliente 
